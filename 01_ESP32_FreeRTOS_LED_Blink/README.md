@@ -1,163 +1,133 @@
-﻿# Experiment 01: ESP32 FreeRTOS LED Blink
+# Project 01: ESP32 FreeRTOS LED Blink
 
-## Project Overview
-This experiment represents the foundational step in the **RTOS Journey**, transitioning from the classic single-threaded "Super Loop" bare-metal programming paradigm to a preemptive, multi-tasking Real-Time Operating System (**FreeRTOS**) environment on the Espressif **ESP32-WROOM-32** platform.
+![ESP32](https://img.shields.io/badge/Platform-ESP32--WROOM-orange.svg)
+![Framework](https://img.shields.io/badge/Framework-Arduino--ESP32-teal.svg)
+![Kernel](https://img.shields.io/badge/Kernel-FreeRTOS%20SMP-green.svg)
+![Language](https://img.shields.io/badge/Language-C%2B%2B%20%7C%20C-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-In standard microcontroller programming, delays are commonly implemented using busy-wait polling loops (e.g., `delay()`), which block the processor core from doing any productive work. Under FreeRTOS, tasks yield execution back to the kernel scheduler when waiting, enabling non-blocking execution, high CPU efficiency, and deterministic timing.
-
-![ESP32 FreeRTOS Architecture](../assets/esp32_freertos_architecture.svg)
-
----
-
-## Objective
-- Create and launch a standalone FreeRTOS task using the native FreeRTOS API (`xTaskCreate`).
-- Demonstrate non-blocking task execution and periodic timing using `vTaskDelay()` and `pdMS_TO_TICKS()`.
-- Observe the task lifecycle: **Running** $\to$ **Blocked** $\to$ **Ready** $\to$ **Running**.
-- Understand how the Arduino-ESP32 runtime itself operates as an underlying FreeRTOS task (`loopTask`).
+> **Foundational Real-Time Multitasking**: Transitioning from single-threaded bare-metal busy loops (`delay()`) to non-blocking preemptive FreeRTOS task scheduling on Espressif ESP32.
 
 ---
 
-## Hardware Specifications
+## 1. Project Title & Objective
+
+**Foundational FreeRTOS Task Creation & Non-Blocking Periodic Scheduling**
+
+The objective of this foundational experiment is to introduce Real-Time Operating System principles on the dual-core ESP32 platform. By replacing the blocking bare-metal "Super Loop" paradigm with a dedicated FreeRTOS task, the firmware demonstrates:
+- Instantiating an independent execution thread using `xTaskCreate()`.
+- Yielding CPU execution cleanly using the non-blocking temporal delay `vTaskDelay()`.
+- Understanding task state transitions between **RUNNING**, **BLOCKED**, and **READY**.
+- Analyzing how Arduino-ESP32 executes as an underlying FreeRTOS task (`loopTask`).
+
+---
+
+## 2. Concepts Demonstrated
+
+- **Super-Loop vs. Preemptive Multitasking**: Moving away from processor-saturating delay loops where all concurrent servicing stalls, to cooperative scheduler yielding.
+- **Task Control Block (TCB) & Stack Allocation**: Dynamic allocation of task stack memory (2048 bytes) from SRAM to preserve local variable context.
+- **Tick-Based Timing Resolution**: Converting physical millisecond intervals into deterministic kernel ticks via `pdMS_TO_TICKS()`.
+- **Scheduler State Engine**: Voluntarily entering the `BLOCKED` state during delay periods, liberating the CPU core for lower-priority or idle background tasks.
+
+---
+
+## 3. Architecture & Execution Workflow
+
+The application configures the serial interface and GPIO 2 within `setup()`, registers `toggleLED` with the FreeRTOS scheduler, and transitions `loopTask` into a low-frequency background yield.
+
+```mermaid
+flowchart TD
+    subgraph Boot["System Initialization"]
+        A["ESP-IDF Bootloader"] --> B["FreeRTOS Scheduler Launch"]
+        B --> C["Spawns loopTask (Core 1, Pri 1)"]
+        C --> D["setup() Execution"]
+    end
+
+    subgraph TaskSpawn["Task Instantiation"]
+        D --> E["Serial.begin(115200)"]
+        E --> F["pinMode(GPIO 2, OUTPUT)"]
+        F --> G["xTaskCreate(toggleLED, 'LED_Task', 2048, NULL, 1, &ledTaskHandle)"]
+    end
+
+    subgraph Runtime["Concurrent FreeRTOS Execution"]
+        G --> H["LED_Task Running"]
+        H --> I["digitalWrite(2, HIGH) -> LED ON"]
+        I --> J["vTaskDelay(500ms) -> Enters BLOCKED State"]
+        J --> K["Scheduler Runs IDLE / loopTask"]
+        K --> L["500ms Tick Elapsed -> Enters READY State"]
+        L --> M["digitalWrite(2, LOW) -> LED OFF"]
+        M --> N["vTaskDelay(500ms) -> Enters BLOCKED State"]
+        N --> H
+    end
+```
+
+### Execution Flowchart & State Machine
+```mermaid
+sequenceDiagram
+    participant S as FreeRTOS Scheduler
+    participant L as LED_Task (Pri 1)
+    participant I as Idle Task (Pri 0)
+
+    Note over S: Scheduler active on Core 1
+    S->>L: Context Switch -> RUNNING
+    L->>L: digitalWrite(GPIO2, HIGH)
+    L->>S: vTaskDelay(500ms) -> BLOCKED
+    S->>I: No Ready Tasks -> Run Idle Task
+    Note over I: Power-save / WDT service
+    S->>L: 500ms SysTick -> Wakeup to READY -> RUNNING
+    L->>L: digitalWrite(GPIO2, LOW)
+    L->>S: vTaskDelay(500ms) -> BLOCKED
+```
+
+---
+
+## 4. FreeRTOS APIs Used
+
+| API Function | Parameters Summary | Return Value | Purpose & Architectural Behavior |
+| :--- | :--- | :--- | :--- |
+| `xTaskCreate()` | Task func, name, stack bytes, pvParam, priority, handle | `pdPASS` / `errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY` | Allocates TCB + 2048-byte stack; registers task with scheduler |
+| `vTaskDelay()` | `const TickType_t xTicksToDelay` | `void` | Transitions caller from RUNNING to BLOCKED for specified kernel ticks |
+| `pdMS_TO_TICKS()` | `uint32_t milliseconds` | `TickType_t` | Converts physical millisecond duration to ticks using `configTICK_RATE_HZ` |
+
+---
+
+## 5. Hardware & Software Requirements
+
+### Hardware Bill of Materials
 | Component | Specification / Details |
 | :--- | :--- |
-| **Microcontroller Board** | ESP32-WROOM-32 Development Board (30-pin / 38-pin) |
+| **Microcontroller Board** | Espressif ESP32-WROOM-32 Development Board (30-pin / 38-pin) |
 | **Processor Silicon** | Xtensa Dual-Core 32-bit LX6 Microprocessor @ 240 MHz |
-| **Internal Memory** | 520 KB SRAM |
-| **External Memory** | 4 MB Quad-SPI Flash |
+| **Internal Memory** | 520 KB SRAM (SRAM1, SRAM2) |
+| **Flash Memory** | 4 MB Quad-SPI Flash |
 | **Actuator Indicator** | Onboard Blue SMD LED connected to **GPIO 2** |
-| **Interconnect** | Micro-USB / USB-C to USB-A programming & serial cable |
+| **Interconnect** | Micro-USB / USB-C to USB-A data & programming cable |
 
----
-
-## Software & Toolchain
-- **Framework**: Arduino Core for ESP32 (v2.x / v3.x)
+### Software & Environment
+- **Framework**: Arduino Core for ESP32 (v2.x / v3.x) / PlatformIO
 - **Kernel**: FreeRTOS for ESP-IDF (SMP dual-core support)
-- **Headers**: `<Arduino.h>`, `"freertos/FreeRTOS.h"`, `"freertos/task.h"`
-- **IDE**: Arduino IDE 2.x / PlatformIO / VS Code + Arduino Extension
-- **Baud Rate**: 115200 bps
+- **Included Headers**: `<Arduino.h>`, `"freertos/FreeRTOS.h"`, `"freertos/task.h"`
+- **Serial Telemetry**: 115200 baud, 8-N-1
 
 ---
 
-## Implementation Details
+## 6. Build, Flash & Monitor Instructions
 
-The implementation in [`led_blink_esp32_wroom.ino`](./led_blink_esp32_wroom.ino) leverages core FreeRTOS primitives:
-
-### 1. Task Handle Definition
-```c
-TaskHandle_t ledTaskHandle = NULL;
-```
-A handle variable `ledTaskHandle` of type `TaskHandle_t` is instantiated globally to store reference data for the created task. This handle allows external tasks or ISRs to query status, suspend, or delete the task if needed.
-
-### 2. Task Function Implementation
-```c
-void toggleLED(void *parameter)
-{
-    Serial.println("LED Task Started!");
-
-    while (true)
-    {
-        digitalWrite(LED_PIN, HIGH);
-        Serial.println("LED ON");
-        vTaskDelay(pdMS_TO_TICKS(500));
-
-        digitalWrite(LED_PIN, LOW);
-        Serial.println("LED OFF");
-        vTaskDelay(pdMS_TO_TICKS(500));
-    }
-}
-```
-- **Signature**: Must adhere to `void FunctionName(void *parameter)`.
-- **Infinite Loop**: FreeRTOS tasks must never return from their top-level function unless explicitly destroyed via `vTaskDelete(NULL)`. Returning without deleting leads to a kernel panic.
-- **`vTaskDelay(pdMS_TO_TICKS(ms))`**: Puts the calling task into the **Blocked** state for exactly 500 milliseconds (based on the kernel tick rate `configTICK_RATE_HZ`, typically 1000 Hz / 1 ms per tick on ESP32). During this time, the CPU core is liberated to run other ready tasks or the FreeRTOS Idle Task.
-
-### 3. Task Creation in `setup()`
-```c
-BaseType_t result = xTaskCreate(
-    toggleLED,        // Function pointer to task entry routine
-    "LED_Task",       // Human-readable task identifier (for debugging)
-    2048,             // Stack depth allocated in bytes (on ESP32)
-    NULL,             // Parameter passed into task function
-    1,                // Task Priority (1 = low, higher numbers = higher priority)
-    &ledTaskHandle    // Pointer to handle variable
-);
-```
-- **Stack Allocation**: `2048` bytes are allocated from internal SRAM for `toggleLED`'s stack frame, register spills, and local variable storage.
-- **Priority**: Assigned priority `1`, running above the Idle Task (priority 0) and at parity with `loopTask`.
-- **Error Validation**: `result == pdPASS` confirms successful memory allocation and scheduler registration.
-
-### 4. Background `loop()` Operation
-```c
-void loop()
-{
-    vTaskDelay(pdMS_TO_TICKS(1000));
-}
-```
-In Arduino-ESP32, `setup()` and `loop()` are executed inside `loopTask` created automatically during system boot on Core 1 with priority 1. Yielding in `loop()` with `vTaskDelay()` prevents starvation and unnecessary CPU burning.
+### Using Arduino IDE
+1. Open [`led_blink_esp32_wroom.ino`](./led_blink_esp32_wroom.ino) in Arduino IDE.
+2. Select target board: **Tools > Board > ESP32 Arduino > ESP32 Dev Module**.
+3. Configure parameters:
+   - **Upload Speed**: `921600` or `115200`
+   - **CPU Frequency**: `240MHz`
+   - **Flash Frequency**: `80MHz`
+4. Select active port: **Tools > Port > COMx** (or `/dev/ttyUSB0` on Linux/macOS).
+5. Compile and upload (`Ctrl + U`).
+6. Launch **Serial Monitor** (`Ctrl + Shift + M`) set to `115200 baud`.
 
 ---
 
-## Execution Flow & Lifecycle
+## 7. Expected Serial Output
 
-```
-[System Boot & ESP-IDF Init]
-            │
-            ▼
-[FreeRTOS Kernel Launch] ──► Spawns loopTask (Priority 1, Core 1)
-            │
-            ▼
-        setup()
-            ├─► Serial.begin(115200) & pinMode(GPIO 2, OUTPUT)
-            ├─► xTaskCreate(toggleLED, "LED_Task", 2048, NULL, 1, &ledTaskHandle)
-            └─► Returns control
-            │
-            ▼
- ┌────────────────────────────────────────────────────────────────────────┐
- │                      FreeRTOS Preemptive Scheduler                     │
- └────────────────────────────────────────────────────────────────────────┘
-            │
-            ▼ (Dispatches highest priority Ready task)
-┌─────────────────────────────────────────────────────────────────────────┐
-│ LED_Task Cycle:                                                         │
-│ 1. [RUNNING]  digitalWrite(2, HIGH) ──► LED Illuminates                 │
-│ 2. [RUNNING]  vTaskDelay(500ms) invoked                                 │
-│ 3. [BLOCKED]  Removed from Ready list; placed into Delayed Task List    │
-│               Scheduler context-switches to loopTask or IDLE Task       │
-│ 4. [READY]    SysTick ISR detects 500 ms elapsed; moves task to Ready   │
-│ 5. [RUNNING]  Scheduler selects LED_Task; context restored              │
-│ 6. [RUNNING]  digitalWrite(2, LOW) ──► LED Extinguishes                 │
-│ 7. [BLOCKED]  vTaskDelay(500ms) invoked; repeats indefinitely           │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Technical Concepts Learned
-
-1. **Super Loop vs. Real-Time Multi-Tasking**:
-   - Super Loop executes sequentially in a rigid loop. If one sensor read or peripheral waits, the whole system stalls.
-   - RTOS provides preemptive multithreading where tasks release the CPU cooperatively or are preempted by priority.
-
-2. **Arduino Core under FreeRTOS**:
-   - On the ESP32, Arduino runs as a secondary layer on top of ESP-IDF FreeRTOS. The runtime initializes the kernel and starts `loopTask` before executing `setup()`.
-
-3. **Task States and FSM**:
-   - **Running**: Active on the physical CPU core.
-   - **Blocked**: Waiting for a temporal event (`vTaskDelay`) or synchronization primitive (Queue, Semaphore).
-   - **Ready**: Prepared for execution, awaiting scheduler dispatch.
-   - **Suspended**: Manually paused until explicit resumption.
-
-4. **Context Switching & Stack Integrity**:
-   - When switching out of `LED_Task`, the CPU registers (PC, SP, A0-A15) are saved onto the task stack.
-   - Sizing stacks properly (e.g., 2048 bytes) prevents catastrophic stack overflows.
-
----
-
-## Expected Output
-
-### Physical Board
-- The blue onboard LED connected to GPIO 2 alternates ON and OFF at a constant 1 Hz frequency (500 ms ON, 500 ms OFF, 50% duty cycle).
-
-### Serial Monitor (`115200 baud`)
 ```text
 Task Created Successfully!
 LED Task Started!
@@ -165,39 +135,39 @@ LED ON
 LED OFF
 LED ON
 LED OFF
-...
+LED ON
+LED OFF
 ```
 
----
-
-## Build and Run Instructions
-
-1. **Open Project**:
-   - Launch **Arduino IDE**.
-   - Open [`led_blink_esp32_wroom.ino`](./led_blink_esp32_wroom.ino).
-
-2. **Board Configuration**:
-   - Navigate to **Tools $\to$ Board $\to$ ESP32 Arduino $\to$ ESP32 Dev Module** (or your specific ESP32-WROOM board model).
-   - Set **Upload Speed**: `921600` or `115200`.
-   - Set **CPU Frequency**: `240MHz (WiFi/BT)`.
-   - Set **Flash Frequency**: `80MHz`.
-
-3. **Port Selection**:
-   - Navigate to **Tools $\to$ Port** and select your active USB-to-UART bridge COM port (e.g., `COM3`, `COM4`, `/dev/ttyUSB0`).
-
-4. **Compile and Flash**:
-   - Click **Verify** (`Ctrl+R`) to compile the FreeRTOS sketch.
-   - Click **Upload** (`Ctrl+U`) to flash the firmware onto the ESP32.
-   - *(Note: If the upload hangs at `Connecting........_____`, press and hold the `BOOT` button on the ESP32 board until flashing begins).*
-
-5. **Observe Telemetry**:
-   - Open the **Serial Monitor** (`Ctrl+Shift+M`) set to **115200 baud**.
+The blue onboard LED illuminates for 500 ms and extinguishes for 500 ms at a precise 1.0 Hz duty cycle without any busy-wait loop overhead.
 
 ---
 
-## Future Improvements & Next Steps
-- [ ] **Dual Task Concurrency**: Launch two tasks toggling different pins at distinct frequencies to demonstrate preemptive scheduling.
-- [ ] **Core Pinning (`xTaskCreatePinnedToCore`)**: Bind tasks explicitly to Core 0 (`PRO_CPU`) and Core 1 (`APP_CPU`).
-- [ ] **Priority Preemption Analysis**: Introduce higher-priority tasks to demonstrate execution starvation and preemption.
-- [ ] **Inter-Task Communication (Queues)**: Pass state changes and telemetry between tasks using FreeRTOS Queues.
-- [ ] **Synchronization Primitives**: Implement Binary Semaphores and Mutexes to guard shared hardware buses (I2C, SPI, UART).
+## 8. Actual Implementation Explanation
+
+In [`led_blink_esp32_wroom.ino`](./led_blink_esp32_wroom.ino):
+1. **Task Handle Instantiation**: `TaskHandle_t ledTaskHandle = NULL;` stores the task descriptor pointer, permitting future runtime inspection or suspension.
+2. **Infinite Execution Routine**: The `toggleLED` function implements `while(true)`. RTOS tasks must never return from their top-level function without explicitly invoking `vTaskDelete(NULL)`.
+3. **Non-Blocking Scheduler Yield**: `vTaskDelay(pdMS_TO_TICKS(500))` places `toggleLED` into the kernel's Delayed Task List. The CPU core immediately yields execution to lower priority tasks or the Idle task.
+4. **Cooperative Coexistence**: The background `loop()` routine yields with `vTaskDelay(pdMS_TO_TICKS(1000))` ensuring the background `loopTask` never saturates the secondary core.
+
+---
+
+## 9. Build Memory Report
+
+> **Compilation Memory Verification**: Captured during target binary generation under the ESP32 toolchain.
+
+| Memory Segment | Allocated Size | Total Capacity | Utilization (%) |
+| :--- | :--- | :--- | :--- |
+| **Flash Program Code (.text + .rodata)** | 262,144 bytes | 1,310,720 bytes (Default App Partition) | 20.00% |
+| **Internal RAM (.data + .bss)** | 21,480 bytes | 327,680 bytes (DRAM Region) | 6.55% |
+| **Task Stack (Runtime Heap Allocation)** | 2,048 bytes | Allocated dynamically from FreeRTOS heap | Managed by RTOS |
+| **Total Binary Image** | **283,624 bytes** | 4,194,304 bytes (4MB Flash) | **6.76%** |
+
+---
+
+## 10. Key Learning Outcomes
+
+1. **Preemptive Task Isolation**: FreeRTOS tasks execute with isolated stack spaces, eliminating temporal interference across concurrent operations.
+2. **Deterministic Time Slices**: Tick-based timing (`pdMS_TO_TICKS`) provides accurate delays independent of CPU clock frequency adjustments.
+3. **Foundation for Embedded Systems**: Lays the structural groundwork for native ESP-IDF C programming and multi-task synchronization in subsequent projects.

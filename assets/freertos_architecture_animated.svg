@@ -1,0 +1,494 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 720" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient: Clean white to soft slate-blue -->
+    <linearGradient id="archBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+
+    <!-- Card Backgrounds -->
+    <linearGradient id="cardWhite" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F8FAFC"/>
+    </linearGradient>
+
+    <!-- Block Gradients -->
+    <linearGradient id="schedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+
+    <linearGradient id="isrGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+
+    <linearGradient id="ipcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+
+    <linearGradient id="taskGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+
+    <!-- Shadows -->
+    <filter id="boxShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.06"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.04"/>
+    </filter>
+
+    <filter id="glowPulse" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#DC2626"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#7C3AED"/>
+    </marker>
+
+    <!-- Grid -->
+    <pattern id="archGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.8" fill="#CBD5E1" opacity="0.6"/>
+    </pattern>
+
+    <style>
+      @keyframes isrPulse {
+        0%, 100% { fill: #DC2626; opacity: 0.3; }
+        50% { fill: #EF4444; opacity: 1; filter: drop-shadow(0 0 6px #EF4444); }
+      }
+      @keyframes dashTravel {
+        0% { stroke-dashoffset: 60; }
+        100% { stroke-dashoffset: 0; }
+      }
+      @keyframes tickBlink {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
+      }
+      @keyframes queueFlow {
+        0% { transform: translateX(0); }
+        50% { transform: translateX(12px); }
+        100% { transform: translateX(0); }
+      }
+      .anim-isr-signal {
+        stroke-dasharray: 6, 6;
+        animation: dashTravel 1.8s linear infinite;
+      }
+      .anim-queue-signal {
+        stroke-dasharray: 6, 6;
+        animation: dashTravel 2.4s linear infinite;
+      }
+      .anim-tick-light {
+        animation: tickBlink 1s ease-in-out infinite;
+      }
+      .anim-isr-led {
+        animation: isrPulse 1.2s ease-in-out infinite;
+      }
+      .anim-item-packet {
+        animation: queueFlow 3s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas Surface -->
+  <rect x="6" y="6" width="1108" height="708" rx="16" fill="url(#archBg)" stroke="#CBD5E1" stroke-width="1.5" filter="url(#boxShadow)"/>
+  <rect x="6" y="6" width="1108" height="708" rx="16" fill="url(#archGrid)"/>
+
+  <!-- Top Header Bar -->
+  <g transform="translate(36, 28)">
+    <rect x="0" y="0" width="1048" height="52" rx="10" fill="url(#schedGrad)" filter="url(#boxShadow)"/>
+    <!-- Status LED -->
+    <circle cx="24" cy="26" r="5" fill="#10B981" class="anim-tick-light" filter="url(#glowPulse)"/>
+    <text x="40" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="800" fill="#FFFFFF" letter-spacing="0.5">
+      FreeRTOS SMP Real-Time Architecture &amp; Inter-Process Communication Engine
+    </text>
+    <text x="830" y="31" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="600" fill="#93C5FD">
+      ESP-IDF v6.1 • Xtensa Dual-Core
+    </text>
+  </g>
+
+  <!-- ==================== COLUMN 1: HARDWARE & ISR LAYER (X: 36, W: 240) ==================== -->
+  <g transform="translate(36, 96)">
+    <!-- Section Container -->
+    <rect x="0" y="0" width="240" height="580" rx="12" fill="url(#cardWhite)" stroke="#E2E8F0" stroke-width="1.5" filter="url(#boxShadow)"/>
+    
+    <!-- Section Header -->
+    <rect x="0" y="0" width="240" height="38" rx="12" fill="url(#isrGrad)"/>
+    <text x="14" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">
+      1. HARDWARE &amp; ISR DOMAIN
+    </text>
+
+    <!-- Hardware Peripherals -->
+    <g transform="translate(16, 50)">
+      <rect x="0" y="0" width="208" height="66" rx="8" fill="#FEF2F2" stroke="#FECACA" stroke-width="1"/>
+      <circle cx="16" cy="18" r="4" fill="#DC2626" class="anim-isr-led"/>
+      <text x="28" y="21" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#991B1B">ESP32 GPTimer</text>
+      <text x="14" y="42" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" fill="#7F1D1D">
+        Hardware 64-bit Alarm Counter
+      </text>
+      <text x="14" y="56" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" fill="#991B1B">
+        Resolution: 1 MHz • Periodic 1.0s
+      </text>
+    </g>
+
+    <!-- GPIO Hardware Pin -->
+    <g transform="translate(16, 126)">
+      <rect x="0" y="0" width="208" height="56" rx="8" fill="#FEF2F2" stroke="#FECACA" stroke-width="1"/>
+      <text x="14" y="20" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#991B1B">GPIO2 / User Buttons</text>
+      <text x="14" y="38" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" fill="#7F1D1D">
+        Edge-Triggered Interrupts
+      </text>
+      <text x="14" y="50" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#991B1B">
+        Low-Latency Hardware Vector
+      </text>
+    </g>
+
+    <!-- Top-Half ISR Handler -->
+    <g transform="translate(16, 202)">
+      <rect x="0" y="0" width="208" height="136" rx="8" fill="#FFF1F2" stroke="#FDA4AF" stroke-width="1.5"/>
+      <rect x="0" y="0" width="208" height="26" rx="8" fill="#E11D48"/>
+      <text x="10" y="17" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">
+        TOP-HALF ISR (Fast Path)
+      </text>
+
+      <text x="12" y="46" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#881337">1. Clear Timer Interrupt</text>
+      <text x="12" y="66" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#BE123C">2. vTaskNotifyGiveFromISR()</text>
+      <text x="12" y="86" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#881337">3. xQueueSendFromISR()</text>
+      <text x="12" y="108" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#047857">4. portYIELD_FROM_ISR()</text>
+      <text x="12" y="124" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" fill="#4C0519">
+        Guarantees zero busy-wait in ISR
+      </text>
+    </g>
+
+    <!-- Bottom Half Concept Box -->
+    <g transform="translate(16, 358)">
+      <rect x="0" y="0" width="208" height="204" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="14" y="24" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#0F172A">
+        Deferred Processing
+      </text>
+      <text x="14" y="46" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" fill="#475569">
+        Heavy computational work (UART printing, JSON serialization, sensor filtering) is strictly deferred to worker tasks.
+      </text>
+      <text x="14" y="112" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#1E3A8A">
+        Key Architectural Benefit:
+      </text>
+      <text x="14" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" fill="#334155">
+        - Interrupt latency &lt; 2.5 µs<br/>
+        - Zero RTOS queue jitter<br/>
+        - No stack frame corruption<br/>
+        - Deterministic preemption
+      </text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 2: FREERTOS KERNEL & IPC CORE (X: 296, W: 520) ==================== -->
+  <g transform="translate(296, 96)">
+    <!-- Container -->
+    <rect x="0" y="0" width="520" height="580" rx="12" fill="url(#cardWhite)" stroke="#CBD5E1" stroke-width="1.5" filter="url(#boxShadow)"/>
+    
+    <!-- Section Header -->
+    <rect x="0" y="0" width="520" height="38" rx="12" fill="url(#schedGrad)"/>
+    <text x="18" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">
+      2. FREERTOS SMP KERNEL &amp; SYNCHRONIZATION PRIMITIVES
+    </text>
+
+    <!-- Sub-Block A: SMP Dual-Core Scheduler -->
+    <g transform="translate(18, 50)">
+      <rect x="0" y="0" width="484" height="92" rx="8" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.2"/>
+      <text x="14" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#0369A1">
+        Preemptive SMP Dual-Core Scheduler (Tick Rate: 1000 Hz / 1 ms)
+      </text>
+
+      <!-- Core 0 and Core 1 boxes -->
+      <g transform="translate(14, 30)">
+        <rect x="0" y="0" width="220" height="48" rx="6" fill="#FFFFFF" stroke="#38BDF8" stroke-width="1"/>
+        <text x="10" y="18" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F172A">Core 0 (PRO CPU)</text>
+        <text x="10" y="36" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#0284C7">
+          High-Priority Worker &amp; GPTimer ISR
+        </text>
+      </g>
+
+      <g transform="translate(250, 30)">
+        <rect x="0" y="0" width="220" height="48" rx="6" fill="#FFFFFF" stroke="#38BDF8" stroke-width="1"/>
+        <text x="10" y="18" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#0F172A">Core 1 (APP CPU)</text>
+        <text x="10" y="36" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#0284C7">
+          Telemetry, Mutex Logger &amp; Timers
+        </text>
+      </g>
+    </g>
+
+    <!-- Sub-Block B: Synchronization & IPC Grid (4 Cards) -->
+    <g transform="translate(18, 154)">
+      <!-- Card 1: Message Queue -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="234" height="126" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+        <rect x="0" y="0" width="234" height="24" rx="8" fill="#0284C7"/>
+        <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">
+          MESSAGE QUEUE (FIFO)
+        </text>
+
+        <!-- Queue Slots Visual -->
+        <g transform="translate(12, 34)">
+          <rect x="0" y="0" width="44" height="24" rx="4" fill="#E0F2FE" stroke="#0284C7" stroke-width="1"/>
+          <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0369A1">Msg 1</text>
+          
+          <rect x="52" y="0" width="44" height="24" rx="4" fill="#E0F2FE" stroke="#0284C7" stroke-width="1"/>
+          <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0369A1" transform="translate(52,0)">Msg 2</text>
+
+          <rect x="104" y="0" width="44" height="24" rx="4" fill="#E0F2FE" stroke="#0284C7" stroke-width="1" class="anim-item-packet"/>
+          <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0369A1" transform="translate(104,0)">Msg 3</text>
+
+          <rect x="156" y="0" width="44" height="24" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-dasharray="2,2"/>
+          <text x="14" y="16" font-family="'JetBrains Mono', monospace" font-size="9" fill="#94A3B8" transform="translate(156,0)">Free</text>
+        </g>
+
+        <text x="12" y="76" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#475569">
+          Thread-safe Copy-by-Value IPC
+        </text>
+        <text x="12" y="92" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0284C7">
+          xQueueSend() • xQueueReceive()
+        </text>
+        <text x="12" y="112" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" fill="#64748B">
+          Blocked tasks unblock automatically
+        </text>
+      </g>
+
+      <!-- Card 2: Mutex & Priority Inheritance -->
+      <g transform="translate(250, 0)">
+        <rect x="0" y="0" width="234" height="126" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+        <rect x="0" y="0" width="234" height="24" rx="8" fill="#D97706"/>
+        <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">
+          MUTEX (Priority Inheritance)
+        </text>
+
+        <!-- Lock Graphic -->
+        <g transform="translate(14, 34)">
+          <rect x="0" y="0" width="28" height="22" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+          <circle cx="14" cy="11" r="3" fill="#D97706"/>
+          <text x="36" y="16" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="700" fill="#92400E">Guards Shared UART</text>
+        </g>
+
+        <text x="12" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#475569">
+          Prevents unbounded priority inversion
+        </text>
+        <text x="12" y="92" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#B45309">
+          xSemaphoreCreateMutex()
+        </text>
+        <text x="12" y="112" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" fill="#64748B">
+          Inherits prio of waiting task
+        </text>
+      </g>
+
+      <!-- Card 3: Binary & Counting Semaphores -->
+      <g transform="translate(0, 138)">
+        <rect x="0" y="0" width="234" height="126" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+        <rect x="0" y="0" width="234" height="24" rx="8" fill="#059669"/>
+        <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">
+          SEMAPHORES (Binary/Counting)
+        </text>
+
+        <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#065F46">
+          Token-Based Signaling
+        </text>
+        <text x="12" y="62" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#475569">
+          Binary: Discrete hardware events (0 or 1)
+        </text>
+        <text x="12" y="78" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#475569">
+          Counting: Event bursts &amp; resource pools
+        </text>
+        <text x="12" y="98" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#047857">
+          xSemaphoreTake() / Give()
+        </text>
+        <text x="12" y="116" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" fill="#64748B">
+          Zero data copy overhead
+        </text>
+      </g>
+
+      <!-- Card 4: Software Timers & Notifications -->
+      <g transform="translate(250, 138)">
+        <rect x="0" y="0" width="234" height="126" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+        <rect x="0" y="0" width="234" height="24" rx="8" fill="#7C3AED"/>
+        <text x="10" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#FFFFFF">
+          SOFTWARE TIMERS &amp; NOTIFY
+        </text>
+
+        <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#5B21B6">
+          prvTimerTask Daemon
+        </text>
+        <text x="12" y="62" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#475569">
+          Periodic (2000ms) &amp; One-Shot (5000ms)
+        </text>
+        <text x="12" y="78" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#475569">
+          Direct Task Notifications: Ultra-fast
+        </text>
+        <text x="12" y="98" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#6D28D9">
+          xTaskNotifyGive() • ulTaskNotifyTake()
+        </text>
+        <text x="12" y="116" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" fill="#64748B">
+          45% faster than binary semaphore
+        </text>
+      </g>
+    </g>
+
+    <!-- Sub-Block C: Runtime Memory Diagnostics Box -->
+    <g transform="translate(18, 432)">
+      <rect x="0" y="0" width="484" height="130" rx="8" fill="#FAF5FF" stroke="#E9D5FF" stroke-width="1.2"/>
+      <rect x="0" y="0" width="484" height="24" rx="8" fill="#9333EA"/>
+      <text x="12" y="16" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#FFFFFF">
+        RUNTIME DIAGNOSTICS &amp; STACK SUPERVISION (Project 09 &amp; 10)
+      </text>
+
+      <g transform="translate(14, 34)">
+        <text x="0" y="14" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#6B21A8">uxTaskGetStackHighWaterMark()</text>
+        <text x="250" y="14" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#047857">esp_get_free_heap_size()</text>
+        
+        <text x="0" y="34" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" fill="#475569">
+          Monitors unused stack safety margin.
+        </text>
+        <text x="250" y="34" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" fill="#475569">
+          Detects heap depletion and memory leaks.
+        </text>
+
+        <!-- Progress bar simulation -->
+        <rect x="0" y="46" width="220" height="10" rx="3" fill="#E2E8F0"/>
+        <rect x="0" y="46" width="168" height="10" rx="3" fill="#10B981"/>
+        <text x="0" y="70" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#10B981">
+          ✓ Safe Margin: &gt; 1100 bytes stack headroom
+        </text>
+
+        <rect x="250" y="46" width="210" height="10" rx="3" fill="#E2E8F0"/>
+        <rect x="250" y="46" width="180" height="10" rx="3" fill="#3B82F6"/>
+        <text x="250" y="70" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#3B82F6">
+          ✓ Free Heap: ~295 KB available
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 3: APPLICATION TASKS LAYER (X: 836, W: 248) ==================== -->
+  <g transform="translate(836, 96)">
+    <!-- Container -->
+    <rect x="0" y="0" width="248" height="580" rx="12" fill="url(#cardWhite)" stroke="#E2E8F0" stroke-width="1.5" filter="url(#boxShadow)"/>
+    
+    <!-- Section Header -->
+    <rect x="0" y="0" width="248" height="38" rx="12" fill="url(#taskGrad)"/>
+    <text x="14" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">
+      3. CONCURRENT TASKS (01–10)
+    </text>
+
+    <!-- Task 1: High Priority / Sensor -->
+    <g transform="translate(14, 50)">
+      <rect x="0" y="0" width="220" height="88" rx="8" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+      <rect x="170" y="6" width="42" height="18" rx="4" fill="#047857"/>
+      <text x="178" y="18" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#FFFFFF">PRIO 4</text>
+      <text x="10" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#065F46">Sensor &amp; Worker</text>
+      <text x="10" y="38" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#047857">
+        Hardware sample acquisition, deferred GPTimer event handling.
+      </text>
+      <text x="10" y="58" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#047857">
+        Stack: 2048 B • vTaskDelay(500ms)
+      </text>
+      <text x="10" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="600" fill="#065F46">
+        Unblocked by: GPTimer ISR
+      </text>
+    </g>
+
+    <!-- Task 2: Processing & Producer -->
+    <g transform="translate(14, 148)">
+      <rect x="0" y="0" width="220" height="88" rx="8" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+      <rect x="170" y="6" width="42" height="18" rx="4" fill="#1D4ED8"/>
+      <text x="178" y="18" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#FFFFFF">PRIO 3</text>
+      <text x="10" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#1E3A8A">Producer / Control</text>
+      <text x="10" y="38" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#1E40AF">
+        Generates telemetry packets, writes to FIFO Queue with backpressure.
+      </text>
+      <text x="10" y="58" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#1D4ED8">
+        Stack: 2048 B • vTaskDelay(1000ms)
+      </text>
+      <text x="10" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="600" fill="#1E3A8A">
+        Sends to: sensorQueue
+      </text>
+    </g>
+
+    <!-- Task 3: Consumer / Telemetry -->
+    <g transform="translate(14, 246)">
+      <rect x="0" y="0" width="220" height="88" rx="8" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1"/>
+      <rect x="170" y="6" width="42" height="18" rx="4" fill="#059669"/>
+      <text x="178" y="18" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#FFFFFF">PRIO 2</text>
+      <text x="10" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#065F46">Consumer / Dispatch</text>
+      <text x="10" y="38" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#166534">
+        Blocks on `xQueueReceive(portMAX_DELAY)`, processes packets instantly.
+      </text>
+      <text x="10" y="58" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#15803D">
+        Stack: 2048 B • Zero Polling
+      </text>
+      <text x="10" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="600" fill="#14532D">
+        Reads from: sensorQueue
+      </text>
+    </g>
+
+    <!-- Task 4: Supervisor & Monitor -->
+    <g transform="translate(14, 344)">
+      <rect x="0" y="0" width="220" height="88" rx="8" fill="#FAF5FF" stroke="#E9D5FF" stroke-width="1"/>
+      <rect x="170" y="6" width="42" height="18" rx="4" fill="#7C3AED"/>
+      <text x="178" y="18" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#FFFFFF">PRIO 1</text>
+      <text x="10" y="20" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" fill="#5B21B6">Supervisor &amp; Health</text>
+      <text x="10" y="38" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#6B21A8">
+        Periodic health telemetry, stack watermarks, Mutex-guarded serial log.
+      </text>
+      <text x="10" y="58" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#7C3AED">
+        Stack: 2048 B • vTaskDelay(1500ms)
+      </text>
+      <text x="10" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="600" fill="#581C87">
+        Guards: printMutex
+      </text>
+    </g>
+
+    <!-- Idle Task -->
+    <g transform="translate(14, 442)">
+      <rect x="0" y="0" width="220" height="50" rx="8" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+      <rect x="170" y="6" width="42" height="18" rx="4" fill="#64748B"/>
+      <text x="178" y="18" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="#FFFFFF">PRIO 0</text>
+      <text x="10" y="20" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#334155">FreeRTOS IDLE Tasks</text>
+      <text x="10" y="38" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" fill="#64748B">
+        Low-power sleep • Cleans deleted task TCBs
+      </text>
+    </g>
+
+    <!-- LED & Peripheral Indicators -->
+    <g transform="translate(14, 502)">
+      <rect x="0" y="0" width="220" height="64" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+      <circle cx="16" cy="18" r="4.5" fill="#3B82F6"/>
+      <text x="28" y="22" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#1E293B">GPIO 2 (Onboard LED)</text>
+      <circle cx="16" cy="42" r="4.5" fill="#10B981"/>
+      <text x="28" y="46" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#1E293B">UART0 (115200 Baud)</text>
+    </g>
+  </g>
+
+  <!-- ==================== ANIMATED INTERCONNECT SIGNALS ==================== -->
+  <!-- Signal 1: Hardware GPTimer ISR -> Task Notification in Kernel -->
+  <path d="M 246 338 L 296 338" fill="none" stroke="#DC2626" stroke-width="2.5" marker-end="url(#arrowRed)" class="anim-isr-signal"/>
+
+  <!-- Signal 2: Queue IPC -> Consumer Task -->
+  <path d="M 548 270 L 610 270 L 610 376 L 836 376" fill="none" stroke="#0284C7" stroke-width="2" marker-end="url(#arrowBlue)" class="anim-queue-signal"/>
+
+  <!-- Signal 3: ISR -> High Priority Worker Task unblocking -->
+  <path d="M 246 226 L 272 226 L 272 170 L 836 170" fill="none" stroke="#E11D48" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrowRed)"/>
+</svg>
